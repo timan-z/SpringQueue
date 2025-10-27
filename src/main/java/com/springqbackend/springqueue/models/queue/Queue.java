@@ -20,6 +20,9 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+// NOTE: Pretty sure this class should be a service! <-- Check later when refactoring to see if I should do that...
+// NOTE: ^ In which case I should *maybe* rename this file to QueueService?
+
 public class Queue {
     // Fields:
     //private int tasksCapacity;

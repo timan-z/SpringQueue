@@ -18,7 +18,7 @@ public class Worker implements Runnable {
     public Worker(int id, Queue queue) {
         this.id = id;
         this.queue = queue;
-    }
+    } // DEBUG: Maybe queue should be autowired in? I have no idea. <-- Dependency Injection is automatic maybe I should add for good practice, I have no idea.
 
     // "run" will basically be this project's version of GoQueue's StartWorker():
     @Override
