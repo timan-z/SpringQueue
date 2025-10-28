@@ -30,7 +30,7 @@ public class Worker implements Runnable {
                 if(t.getAttempts() == t.getMaxRetries()) {
                     if(t.getStatus() == TaskStatus.FAILED) {
                         System.out.println("[Worker " + id + "] Task " + t.getId() + " (Type: " + t.getType() + ") failed permanently (max retries reached)");
-                        continue;
+                        break;
                     }
                 }
                 t.setAttempts(t.getAttempts() + 1);
@@ -38,7 +38,6 @@ public class Worker implements Runnable {
                 System.out.println("[StartWorker]:[Worker " + id + "] Processing task: " + t.getId() + " (Attempt " + t.getAttempts() + " - " + t.getStatus() + ", Type: " + t.getType() + ")");
 
                 handleTaskType(t);  // Verbose logic in my worker.go file can just be ported to a helper method for cleanliness.
-
             } catch(Exception e) {
                 System.out.println("There was an issue in the Worker thread loop: " + e);
                 continue;   // DEBUG:+NOTE: Not actually sure how I should handle this but this will do for now.
@@ -57,10 +56,15 @@ public class Worker implements Runnable {
                         Thread.sleep(2000); // 2000 ms = 1 second.
                         t.setStatus(TaskStatus.COMPLETED);
                     } else {
-                        System.out.println("[Worker " + id + "] Task " + t.getId() + "(Type: fail - 0.25 success rate on retry) failed! Retrying...");
+                        if (t.getAttempts() != t.getMaxRetries()) {
+                            System.out.println("[Worker " + id + "] Task " + t.getId() + "(Type: fail - 0.25 success rate on retry) failed! Retrying...");
+                        } else {
+                            System.out.println("[Worker " + id + "] Task " + t.getId() + "(Type: fail - 0.25 success rate on retry) failed! [No more retries!]");
+                        }
+
                         Thread.sleep(1000);
                         t.setStatus(TaskStatus.FAILED);
-                        queue.enqueue(t);   // re-attempt the failed task.
+                        if (t.getAttempts() != t.getMaxRetries()) queue.enqueue(t);   // re-attempt the failed task (if there are still attempts left).
                     }
                 }
             }

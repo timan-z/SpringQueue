@@ -36,7 +36,7 @@ public class Queue {
     // ^ In my GoQueue project this was "mu" for mutex but doesn't make sense here.
 
     // Constructor:
-    Queue(int tasksCapacity) {
+    public Queue(int tasksCapacity) {
         //this.tasksCapacity = tasksCapacity;
         this.tasks = new LinkedBlockingQueue<>(tasksCapacity);
         this.jobs = new ConcurrentHashMap<>();
@@ -57,7 +57,9 @@ public class Queue {
         lock.lock();
         try {
             jobs.put(t.getId(), t); // GoQueue: q.jobs[t.ID] = &t;
+
             tasks.put(t);   // GoQueue: q.Tasks <- &t;
+
         } catch (InterruptedException e) {
             throw new RuntimeException(e);  // <-- NOTE: This extra "catch(InterruptedException e)" block was added auto to fix error. Need more clarity on its inclusion. (Maybe it should be in the function instead).
         } finally {
@@ -92,7 +94,9 @@ public class Queue {
     // This is the method for returning a copy of all the Jobs (Tasks) we have:
     public Task[] getJobs() {
         readLock.lock();    // "read lock" only (in GoQueue: q.mu.RLock();)
-        Task[] allTasks = new Task[tasks.size()];
+        Task[] allTasks = new Task[jobs.size()];
+        /* NOTE: ^ Originally had new Task[tasks.size()]; which is wrong! and will cause issues
+        since that value is not stable! We pull tasks/jobs out from the queue when they're ready for processing! - I'm dumb! */
         try {
             int i = 0;
             for(String key : jobs.keySet()) {

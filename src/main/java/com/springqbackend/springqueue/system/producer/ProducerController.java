@@ -16,7 +16,8 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "${CORS_ALLOWED_ORIGIN}") // for Netlify/Railway CORS <-- this line alone should replace the CORS stuff I had in Producer.go
+//@CrossOrigin(origins = "${CORS_ALLOWED_ORIGIN}") // for Netlify/Railway CORS <-- this line alone should replace the CORS stuff I had in Producer.go
+// NOTE: ^ I don't have a frontend set up yet so I don't believe I need to worry about any CORS stuff as of this moment...
 public class ProducerController {
     private final Queue queue;
 
@@ -71,7 +72,7 @@ public class ProducerController {
     public ResponseEntity<?> handleRetryJobById(@PathVariable String id) {
         Task t = queue.getJobById(id);
         if(t == null) return ResponseEntity.notFound().build();
-        if(t.getStatus() == TaskStatus.FAILED) return ResponseEntity.badRequest().body(Map.of("error", "[Retry attempt] Can only retry failed jobs"));
+        if(t.getStatus() != TaskStatus.FAILED) return ResponseEntity.badRequest().body(Map.of("error", "[Retry attempt] Can only retry failed jobs"));
 
         Task tClone = new Task(
                 "Task " + System.nanoTime(),
