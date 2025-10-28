@@ -1,12 +1,16 @@
-package com.springqbackend.springqueue.system.producer;
+package com.springqbackend.springqueue.controller;
 
-import com.springqbackend.springqueue.models.queue.Queue;
-import com.springqbackend.springqueue.models.task.Task;
+/* NOTE-TO-SELF: In the context of remaking my GoQueue project, this would be my producer.go file.
+**********************************************************************************************
+MORE NOTES (for my own learning, more related to Spring Boot semantics and best practices):
+* This is the REST API layer.
+*/
+
+import com.springqbackend.springqueue.service.QueueService;
+import com.springqbackend.springqueue.models.Task;
 import com.springqbackend.springqueue.enums.TaskStatus;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.Arrays;
 import java.util.Map;
 import java.util.List;
@@ -19,10 +23,13 @@ import java.util.stream.Collectors;
 //@CrossOrigin(origins = "${CORS_ALLOWED_ORIGIN}") // for Netlify/Railway CORS <-- this line alone should replace the CORS stuff I had in Producer.go
 // NOTE: ^ I don't have a frontend set up yet so I don't believe I need to worry about any CORS stuff as of this moment...
 public class ProducerController {
-    private final Queue queue;
+    private final QueueService queue;
 
-    public ProducerController(Queue queue) {
-        this.queue = queue; // See comment in Worker.java class (Java is pass-by-value for objects, but the value they pass is the reference).
+    /* NOTE: Don't need @Autowired annotation here. Explicit @Autowired is only needed for multiple constructors or setter-based injection.
+    -- Spring will automatically inject constructor parameters for single constructors.
+    -- Regarding this.queue = queue;, see comment in Worker.java class (Java is pass-by-value for objects, but that value is the reference). */
+    public ProducerController(QueueService queue) {
+        this.queue = queue;
     }
 
     // 0. My GoQueue project had a struct "type EnqueueReq struct {...}" in its producer.go file. This would be the equivalent:
@@ -75,7 +82,7 @@ public class ProducerController {
         if(t.getStatus() != TaskStatus.FAILED) return ResponseEntity.badRequest().body(Map.of("error", "[Retry attempt] Can only retry failed jobs"));
 
         Task tClone = new Task(
-                "Task " + System.nanoTime(),
+                "Task-" + System.nanoTime(),
                 t.getPayload(),
                 t.getType(),
                 TaskStatus.QUEUED,

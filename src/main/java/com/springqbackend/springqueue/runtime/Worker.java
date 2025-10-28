@@ -1,21 +1,27 @@
-package com.springqbackend.springqueue.system.worker;
+package com.springqbackend.springqueue.runtime;
 
-import com.springqbackend.springqueue.models.queue.Queue;
-import com.springqbackend.springqueue.models.task.Task;
+/* NOTE-TO-SELF: In the context of remaking my GoQueue project, this would be my worker.go file.
+**********************************************************************************************
+MORE NOTES (for my own learning, more related to Spring Boot semantics and best practices):
+* This is basically defining each Worker thread and their purpose and functionality/logic.
+* Doesn't need a no-args constructor because it's NOT a data object, it's a logic class representing a thread task (implements Runnable).
+*/
+
+import com.springqbackend.springqueue.service.QueueService;
+import com.springqbackend.springqueue.models.Task;
 import com.springqbackend.springqueue.enums.TaskStatus;
-
 import java.util.Random;
 
 public class Worker implements Runnable {
     // Fields:
     private final int id;
-    private final Queue queue;
+    private final QueueService queue;
     private final Random rando = new Random();
     /* NOTE-TO-SELF: Remember, Java is pass-by-value BUT for objects that value is the reference itself.
     "queue" will point to the same Queue instantiated elsewhere (references point to the same location in the memory heap). */
 
     // Constructor:
-    public Worker(int id, Queue queue) {
+    public Worker(int id, QueueService queue) {
         this.id = id;
         this.queue = queue;
     } // DEBUG: Maybe queue should be autowired in? I have no idea. <-- Dependency Injection is automatic maybe I should add for good practice, I have no idea.
@@ -25,7 +31,7 @@ public class Worker implements Runnable {
     public void run() {
         while(true) {
             try {
-                Task t = queue.Dequeue();   // This will block the queue if it's empty, pull something off for processing if not!
+                Task t = queue.dequeue();   // This will block the queue if it's empty, pull something off for processing if not!
 
                 if(t.getAttempts() == t.getMaxRetries()) {
                     if(t.getStatus() == TaskStatus.FAILED) {
@@ -93,6 +99,6 @@ public class Worker implements Runnable {
     private void simulateWork(Task t, int durationMs, String type) throws InterruptedException {
         Thread.sleep(durationMs);
         t.setStatus(TaskStatus.COMPLETED);
-        System.out.println("[Worker " + id + "] Task " + t.getId() + "(Type: " + t.getType() + ") completed");
+        System.out.printf("[Worker %d] Task %s (Type: %s) completed%n", id, t.getId(), t.getType());
     }
 }

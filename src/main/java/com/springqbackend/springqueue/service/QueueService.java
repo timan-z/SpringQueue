@@ -1,18 +1,9 @@
-package com.springqbackend.springqueue.models.queue;
+package com.springqbackend.springqueue.service;
 
-// NOTE-TO-SELF: In the context of remaking my GoQueue project, this would be my Queue.go file.
-/* Some other notes about translating the logic of my Queue.go file:
-"Java's BlockingQueue implementations, such as ArrayBlockingQueue and LinkedBlockingQueue, are designed to be thread-safe
-and internally manage their own synchronization using locks and condition variables. Therefore, explicitly locking a BlockingQueue
-with a separate Lock object in your application code is generally not necessary for basic put() and take() operations.
-However, there might be specific scenarios where you want to add an additional layer of synchronization or coordinate access to the
-BlockingQueue with other shared resources. In such cases, you can use a java.util.concurrent.locks.Lock object, like ReentrantLock,
-to protect a section of code that involves BlockingQueue operations and potentially other critical sections." (From Google AI).
--- pretty sure I still need the lock/mutex for the Jobs map though.
-*/
-
-import com.springqbackend.springqueue.models.task.Task;
+import com.springqbackend.springqueue.models.Task;
 import com.springqbackend.springqueue.enums.TaskStatus;
+import org.springframework.stereotype.Service;
+
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,31 +11,33 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-// NOTE: Pretty sure this class should be a service! <-- Check later when refactoring to see if I should do that...
-// NOTE: ^ In which case I should *maybe* rename this file to QueueService?
+/* NOTE-TO-SELF: In the context of remaking my GoQueue project, this would be my Queue.go file.
+**********************************************************************************************
+* MORE NOTES (for my own learning, more related to Spring Boot semantics and best practices):
+** This should definitely be a @Service (or @Component). This does get injected by Spring's container since:
+*** This queue is long-lived and shared across the entire program.
+*** It's not just a data class; it's a stateful SERVICE managing concurrency and global access.
+*** It needs to be injected into Worker, ProducerController, and so on via dependency injection.
+* Going w/ @Service over @Component because it better conveys business logic.
+* This is a Spring Bean, so I don't need setters, getters, etc. (Not a POJO, purely focused on business logic).
+*/
 
-public class Queue {
+//@Service
+// NOTE: ^ This is not needed since I have @Bean in my SpringQueueApplication.java file.
+public class QueueService {
     // Fields:
-    //private int tasksCapacity;
     private final BlockingQueue<Task> tasks;
     private final ConcurrentHashMap<String,Task> jobs;
     private final Lock lock;
     private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
     private final ReentrantReadWriteLock.ReadLock readLock = rwLock.readLock();
 
-    //private ReentrantReadWriteLock lock;
-    // ^ In my GoQueue project this was "mu" for mutex but doesn't make sense here.
-
     // Constructor:
-    public Queue(int tasksCapacity) {
-        //this.tasksCapacity = tasksCapacity;
+    public QueueService(int tasksCapacity) {
         this.tasks = new LinkedBlockingQueue<>(tasksCapacity);
         this.jobs = new ConcurrentHashMap<>();
         this.lock = new ReentrantLock();
     }
-
-    /* DEBUG:+NOTE: Just focus on translating the concepts first.
-    Figure out later how the getter and setter methods etc would work for a class like this... */
 
     // Methods:
     // 1. Translating GoQueue's "func (q * Queue) Enqueue(t task.Task) {...}" function:
@@ -57,18 +50,17 @@ public class Queue {
         lock.lock();
         try {
             jobs.put(t.getId(), t); // GoQueue: q.jobs[t.ID] = &t;
-
             tasks.put(t);   // GoQueue: q.Tasks <- &t;
-
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);  // <-- NOTE: This extra "catch(InterruptedException e)" block was added auto to fix error. Need more clarity on its inclusion. (Maybe it should be in the function instead).
+            Thread.currentThread().interrupt(); // NOTE: This line here is the proper "canonical" way to handle these scenarios in Java.
+            throw new RuntimeException("Thread interrupted while enqueueing: ", e);
         } finally {
             lock.unlock();
         }
     }
 
     // 2. Translating GoQueue's "func (q * Queue) Dequeue() * task.Task {...}" function:
-    public Task Dequeue() throws InterruptedException {
+    public Task dequeue() throws InterruptedException {
         return tasks.take();    // "Blocks if the queue is still empty until an element becomes available."
     }
 
@@ -77,14 +69,13 @@ public class Queue {
     public void clear() {
         lock.lock();
         try {
-            jobs.clear();   // This will clear the ConcurrentHashMap.
-            /* NOTE: In Go, I used a loop that would pull out a value from the Queue per iteration
-            and basically repeat until it was empty. I think the loop below should basically suffice? */
-            while (!tasks.isEmpty()) {
-                tasks.take();
-            }
-        } catch(InterruptedException e) {
-          throw new RuntimeException(e);  // <-- NOTE: This extra "catch(InterruptedException e)" block was added auto to fix error. Need more clarity on its inclusion. (Maybe it should be in the function instead).
+            jobs.clear();
+            tasks.clear();
+            /* NOTE: ^ In my queue.go file, instead of tasks.clear(); I used a loop that would iterate while
+            tasks wasn't empty and repeatedly pull values out of the Queue per iteration. I did that initially
+            here w/ while(!tasks.isEmpty()) { tasks.take(); }. But it's not necessary here since the Queue's
+            internal .clear() function does the work better for me AND there's potential for the thread to block
+            indefinitely w/ .take(); (that's also why this function initially needed a catch (InterruptedException e) {...} block. */
         } finally {
             lock.unlock();
         }
@@ -95,8 +86,6 @@ public class Queue {
     public Task[] getJobs() {
         readLock.lock();    // "read lock" only (in GoQueue: q.mu.RLock();)
         Task[] allTasks = new Task[jobs.size()];
-        /* NOTE: ^ Originally had new Task[tasks.size()]; which is wrong! and will cause issues
-        since that value is not stable! We pull tasks/jobs out from the queue when they're ready for processing! - I'm dumb! */
         try {
             int i = 0;
             for(String key : jobs.keySet()) {
@@ -142,5 +131,11 @@ public class Queue {
         return res;
     }
 
-    // TO-DO: Fill in the mandatory-practice methods (e.g., setters and getters) latter -- to practice muscle memory.
+    // HELPER-METHODS: Might be helpful for monitoring endpoints if necessary...
+    public int getPendingTaskCount() {
+        return tasks.size();
+    }
+    public int getJobMapCount() {
+        return jobs.size();
+    }
 }

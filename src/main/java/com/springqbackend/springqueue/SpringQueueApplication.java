@@ -1,7 +1,7 @@
 package com.springqbackend.springqueue;
 
-import com.springqbackend.springqueue.models.queue.Queue;
-import com.springqbackend.springqueue.system.worker.Worker;
+import com.springqbackend.springqueue.service.QueueService;
+import com.springqbackend.springqueue.runtime.Worker;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -17,12 +17,12 @@ public class SpringQueueApplication {
 	}
 
     @Bean
-    public Queue queue() {
-        return new Queue(100);  // In my GoQueue project's main.go file: queue.NewQueue(100)
+    public QueueService queue() {
+        return new QueueService(100);  // In my GoQueue project's main.go file: queue.NewQueue(100)
     }
 
     @Bean
-    public CommandLineRunner initWorkers(Queue queue) {
+    public CommandLineRunner initWorkers(QueueService queue) {
         // This would be equivalent to the code block in my GoQueue's main.go where I spawn 3 worker goroutines (threads):
         return args -> {
             int workerCount = 3;

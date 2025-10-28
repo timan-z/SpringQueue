@@ -1,6 +1,12 @@
-package com.springqbackend.springqueue.models.task;
+package com.springqbackend.springqueue.models;
 
-// NOTE-TO-SELF: In the context of remaking my GoQueue project, this would be my Task.go file.
+/* NOTE-TO-SELF: In the context of remaking my GoQueue project, this would be my Task.go file.
+**********************************************************************************************
+MORE NOTES (for my own learning, more related to Spring Boot semantics and best practices):
+* This is a POJO (Plain-Old Java Object), not a Bean. (The class shouldn't have any annotations).
+** It is meant to be created dynamically and not injected by Spring's container.
+** POJOs' should have no-args constructors. Any models, DTOs, or entity classes should have these.
+*/
 
 import com.springqbackend.springqueue.enums.TaskStatus;
 import java.util.Objects;
@@ -9,13 +15,16 @@ public class Task {
     // Fields:
     private String id;
     private String payload;
-    private String type;    // <-- NOTE: Probably change this to Enum or something.
+    private String type;    // TO-DO:(?) I could change this to also be an enum like "status" (not sure how undefined/foreign request types are handled though).
     private TaskStatus status;
     private int attempts;
     private int maxRetries;
-    private String createdAt;
+    private String createdAt;   // TO-DO:(?) I format this with LocalDateTime. (I could change this to that type for better filtering and so on).
 
-    // Constructor:
+    // Constructor(s):
+    // no-args Constructor - for potential frameworks like Jackson/JPA (that may serialize/deserialize the object):
+    public Task() {}
+    // Main Constructor:
     public Task(String id, String payload, String type, TaskStatus status, int attempts, int maxRetries, String createdAt) {
         this.id = id;
         this.payload = payload;
@@ -80,6 +89,7 @@ public class Task {
     // hashCode():
     @Override
     public int hashCode() {
+        // return Objects.hash(id, payload, type, status, attempts, maxRetries, createdAt);
         int hash = 7;
         hash = 31 * hash + (id == null ? 0: id.hashCode()); // NOTE: Not a numerical id! (stored in String for ar reason).
         hash = 31 * hash + (payload == null ? 0: payload.hashCode());
