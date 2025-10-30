@@ -2,47 +2,44 @@ package com.springqbackend.springqueue.service;
 
 import com.springqbackend.springqueue.models.Task;
 import com.springqbackend.springqueue.enums.TaskStatus;
+import com.springqbackend.springqueue.runtime.Worker;
+import jakarta.annotation.PreDestroy;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-/* NOTE-TO-SELF: In the context of remaking my GoQueue project, this would be my Queue.go file.
-**********************************************************************************************
-* MORE NOTES (for my own learning, more related to Spring Boot semantics and best practices):
-** This should definitely be a @Service (or @Component). This does get injected by Spring's container since:
-*** This queue is long-lived and shared across the entire program.
-*** It's not just a data class; it's a stateful SERVICE managing concurrency and global access.
-*** It needs to be injected into Worker, ProducerController, and so on via dependency injection.
-* Going w/ @Service over @Component because it better conveys business logic.
-* This is a Spring Bean, so I don't need setters, getters, etc. (Not a POJO, purely focused on business logic).
+/* NOTE:: Initially did not have the @Service annotation because I was injecting this as a @Bean in SpringQueueApplication.java,
+but as part of my ExecutorService Refactor, the @Bean has been removed so we should just have @Service here.
 */
-
-//@Service
-// NOTE: ^ This is not needed since I have @Bean in my SpringQueueApplication.java file.
+@Service
 public class QueueService {
     // Fields:
-    private final BlockingQueue<Task> tasks;
+    private final ExecutorService executor; // DEBUG: ExecutorService Refactor.
     private final ConcurrentHashMap<String,Task> jobs;
     private final Lock lock;
     private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
     private final ReentrantReadWriteLock.ReadLock readLock = rwLock.readLock();
 
+    /* DEBUG: Removed fields as part of the ExecutorService Refactor:
+    private final BlockingQueue<Task> tasks;
+    */
+
     // Constructor:
-    public QueueService(int tasksCapacity) {
-        this.tasks = new LinkedBlockingQueue<>(tasksCapacity);
+    public QueueService() {
         this.jobs = new ConcurrentHashMap<>();
         this.lock = new ReentrantLock();
+        this.executor = Executors.newFixedThreadPool(3);
+        /* DEBUG: ^ As part of the ExecutorService refactor, this will replace the @Bean CommandLineRunner in SpringQueueApplication.java.
+        The ExecutorService abstracts the whole for i := 1; i <= 3; i++ { go StartWorker(i) } step in Go (which I replicated w/ CommandLineRunner etc).
+        */
     }
 
     // Methods:
     // 1. Translating GoQueue's "func (q * Queue) Enqueue(t task.Task) {...}" function:
     public void enqueue(Task t) {
-        // NOTE: Slight change from my Queue.go file, but I reckon these actions can be done before the lock:
         t.setStatus(TaskStatus.QUEUED);
         if(t.getAttempts() == 0) {
             t.setMaxRetries(3);
@@ -50,27 +47,27 @@ public class QueueService {
         lock.lock();
         try {
             jobs.put(t.getId(), t); // GoQueue: q.jobs[t.ID] = &t;
-            tasks.put(t);   // GoQueue: q.Tasks <- &t;
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt(); // NOTE: This line here is the proper "canonical" way to handle these scenarios in Java.
-            throw new RuntimeException("Thread interrupted while enqueueing: ", e);
+            executor.submit(new Worker(t, this));   // Submit an instance of a Worker to the ExecutorService (executor pool).
         } finally {
             lock.unlock();
         }
     }
 
+    /* NOTE: With the incorporation of ExecutorService, GoQueue's "func (q * Queue) Dequeue() * task.Task {...}" function is no longer
+    necessary given that ExecutorService handles queuing internally. (That means I don't need to manage that myself anymore). */
     // 2. Translating GoQueue's "func (q * Queue) Dequeue() * task.Task {...}" function:
-    public Task dequeue() throws InterruptedException {
+    /*public Task dequeue() throws InterruptedException {
         return tasks.take();    // "Blocks if the queue is still empty until an element becomes available."
     }
+    */
 
-    // 3. Translating GoQueue's "func (q * Queue) Clear() {...}" function:
+    // 2. Translating GoQueue's "func (q * Queue) Clear() {...}" function:
     // (This is the method for "emptying the queue").
     public void clear() {
         lock.lock();
         try {
             jobs.clear();
-            tasks.clear();
+            //tasks.clear();
             /* NOTE: ^ In my queue.go file, instead of tasks.clear(); I used a loop that would iterate while
             tasks wasn't empty and repeatedly pull values out of the Queue per iteration. I did that initially
             here w/ while(!tasks.isEmpty()) { tasks.take(); }. But it's not necessary here since the Queue's
@@ -81,7 +78,7 @@ public class QueueService {
         }
     }
 
-    // 4. Translating GoQueue's "func (q * Queue) GetJobs() []*task.Task {...}" function:
+    // 3. Translating GoQueue's "func (q * Queue) GetJobs() []*task.Task {...}" function:
     // This is the method for returning a copy of all the Jobs (Tasks) we have:
     public Task[] getJobs() {
         readLock.lock();    // "read lock" only (in GoQueue: q.mu.RLock();)
@@ -132,10 +129,28 @@ public class QueueService {
     }
 
     // HELPER-METHODS: Might be helpful for monitoring endpoints if necessary...
-    public int getPendingTaskCount() {
+    /*public int getPendingTaskCount() {
         return tasks.size();
-    }
+    }*/ // <-- DEBUG: This is no longer necessary after the ExecutorService Refactor.
     public int getJobMapCount() {
         return jobs.size();
+    }
+
+    // DEBUG: Part of ExecutorService Refactor - ExecutorService shutdown method:
+    /* NOTE-TO-SELF:
+    - The ExecutorService needs explicit shutdown (else Spring Boot might hang on exit).
+    - This ensures clean terminal (very important when the service is deployed on Railway or whatever).
+    */
+    @PreDestroy
+    public void shutdown() {
+        executor.shutdown();
+        try {
+            if(!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+            }
+        } catch(InterruptedException e) {
+            Thread.currentThread().interrupt();
+            executor.shutdownNow();
+        }
     }
 }

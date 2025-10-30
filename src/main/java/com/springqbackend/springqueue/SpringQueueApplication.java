@@ -16,12 +16,13 @@ public class SpringQueueApplication {
 		SpringApplication.run(SpringQueueApplication.class, args);
 	}
 
-    @Bean
+    /*@Bean
     public QueueService queue() {
         return new QueueService(100);  // In my GoQueue project's main.go file: queue.NewQueue(100)
-    }
+    }*/
+    // DEBUG: ^ No longer needed as part of the ExecutorService refactor (have @Service now in QueueService).
 
-    @Bean
+    /*@Bean
     public CommandLineRunner initWorkers(QueueService queue) {
         // This would be equivalent to the code block in my GoQueue's main.go where I spawn 3 worker goroutines (threads):
         return args -> {
@@ -32,6 +33,9 @@ public class SpringQueueApplication {
             }
             System.out.println("The 3 workers have been started. (Worker pool has been initialized).");
         };
-    }
+    }*/
+    /* DEBUG: ^ As part of the ExecutorService Refactor, this is no longer necessary (the ExecutorService
+    field in the QueueService class will abstract / do this automatically when instantiated / injected by SpringBoot).
+    */
 
 }
