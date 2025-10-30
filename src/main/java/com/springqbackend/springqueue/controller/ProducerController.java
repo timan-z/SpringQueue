@@ -1,11 +1,5 @@
 package com.springqbackend.springqueue.controller;
 
-/* NOTE-TO-SELF: In the context of remaking my GoQueue project, this would be my producer.go file.
-**********************************************************************************************
-MORE NOTES (for my own learning, more related to Spring Boot semantics and best practices):
-* This is the REST API layer.
-*/
-
 import com.springqbackend.springqueue.service.QueueService;
 import com.springqbackend.springqueue.models.Task;
 import com.springqbackend.springqueue.enums.TaskStatus;

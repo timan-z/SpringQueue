@@ -13,10 +13,6 @@ public class Worker implements Runnable {
     /* NOTE-TO-SELF: Remember, Java is pass-by-value BUT for objects that value is the reference itself.
     "queue" will point to the same Queue instantiated elsewhere (references point to the same location in the memory heap). */
 
-    /* DEBUG: Removed fields as part of the ExecutorService Refactor:
-    private final int id;
-    */
-
     // Constructor:
     public Worker(Task task, QueueService queue) {
         this.task = task;
@@ -27,15 +23,6 @@ public class Worker implements Runnable {
     @Override
     public void run() {
         try {
-            /*DEBUG: Task t = queue.dequeue();   // This will block the queue if it's empty, pull something off for processing if not!
-
-            if(t.getAttempts() == t.getMaxRetries()) {
-                if(t.getStatus() == TaskStatus.FAILED) {
-                    System.out.println("[Worker " + id + "] Task " + t.getId() + " (Type: " + t.getType() + ") failed permanently (max retries reached)");
-                    break;
-                }
-            }*/
-            // DEBUG: ^ All of that is no longer necessary because of the wonderful ExecutorService Refactor.
             task.setAttempts(task.getAttempts() + 1);
             task.setStatus(TaskStatus.INPROGRESS);
             System.out.printf("[Worker] Processing task %s (Attempt %d, Type: %s)%n", task.getId(), task.getAttempts(), task.getType());
@@ -50,40 +37,8 @@ public class Worker implements Runnable {
     // NOTE-TO-SELF: Remember to use "private void" for methods I just want to call from the class' public methods...
     private void handleTaskType(Task t) throws InterruptedException {
         switch(t.getType()) {
-            /*case "fail" -> {
-                double succOdds = 0.25;
-                if(t.getAttempts() <= t.getMaxRetries()) {
-                    if (rando.nextDouble() <= succOdds) {
-                        System.out.println("[Worker " + id + "] Task " + t.getId() + "(Type: fail - 0.25 success rate on retry) completed");
-                        Thread.sleep(2000); // 2000 ms = 1 second.
-                        t.setStatus(TaskStatus.COMPLETED);
-                    } else {
-                        if (t.getAttempts() != t.getMaxRetries()) {
-                            System.out.println("[Worker " + id + "] Task " + t.getId() + "(Type: fail - 0.25 success rate on retry) failed! Retrying...");
-                        } else {
-                            System.out.println("[Worker " + id + "] Task " + t.getId() + "(Type: fail - 0.25 success rate on retry) failed! [No more retries!]");
-                        }
-
-                        Thread.sleep(1000);
-                        t.setStatus(TaskStatus.FAILED);
-                        if (t.getAttempts() != t.getMaxRetries()) queue.enqueue(t);   // re-attempt the failed task (if there are still attempts left).
-                    }
-                }
-            }
-            case "fail-absolute" -> {
-                if(t.getAttempts() <= t.getMaxRetries()) {
-                    System.out.println("[Worker " + id + "] Task " + t.getId() + "(Type: fail-absolute) failed! Retrying...");
-                    Thread.sleep(1000);
-                    t.setStatus(TaskStatus.FAILED);
-                    queue.enqueue(t);
-                } else {
-                    t.setStatus(TaskStatus.FAILED);
-                    System.out.println("[Worker " + id + "] Task " + t.getId() + "(Type: fail-absolute) failed permanently (max retries reached)");
-                }
-            }*/
             case "fail" -> handleFailType(t);
             case "fail-absolute" -> handleAbsoluteFail(t);
-            // NOTE-TO-SELF: WAy smarter to simplify the rest of the cases...
             case "email" -> simulateWork(t, 2000, "email");
             case "report" -> simulateWork(t, 5000, "report");
             case "data-cleanup" -> simulateWork(t, 3000, "data-cleanup");
@@ -94,7 +49,6 @@ public class Worker implements Runnable {
         }
     }
 
-    // DEBUG: Refactoring type "fail" and "fail-absolute" to be their private methods for cleanliness and modularity:
     // handleFailType:
     private void handleFailType(Task t) throws InterruptedException {
         double successChance = 0.25;

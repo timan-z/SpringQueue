@@ -17,24 +17,17 @@ but as part of my ExecutorService Refactor, the @Bean has been removed so we sho
 @Service
 public class QueueService {
     // Fields:
-    private final ExecutorService executor; // DEBUG: ExecutorService Refactor.
+    private final ExecutorService executor;
     private final ConcurrentHashMap<String,Task> jobs;
     private final Lock lock;
     private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
     private final ReentrantReadWriteLock.ReadLock readLock = rwLock.readLock();
-
-    /* DEBUG: Removed fields as part of the ExecutorService Refactor:
-    private final BlockingQueue<Task> tasks;
-    */
 
     // Constructor:
     public QueueService() {
         this.jobs = new ConcurrentHashMap<>();
         this.lock = new ReentrantLock();
         this.executor = Executors.newFixedThreadPool(3);
-        /* DEBUG: ^ As part of the ExecutorService refactor, this will replace the @Bean CommandLineRunner in SpringQueueApplication.java.
-        The ExecutorService abstracts the whole for i := 1; i <= 3; i++ { go StartWorker(i) } step in Go (which I replicated w/ CommandLineRunner etc).
-        */
     }
 
     // Methods:
@@ -128,15 +121,11 @@ public class QueueService {
         return res;
     }
 
-    // HELPER-METHODS: Might be helpful for monitoring endpoints if necessary...
-    /*public int getPendingTaskCount() {
-        return tasks.size();
-    }*/ // <-- DEBUG: This is no longer necessary after the ExecutorService Refactor.
+    // HELPER-METHOD(S): Might be helpful for monitoring endpoints if necessary...
     public int getJobMapCount() {
         return jobs.size();
     }
 
-    // DEBUG: Part of ExecutorService Refactor - ExecutorService shutdown method:
     /* NOTE-TO-SELF:
     - The ExecutorService needs explicit shutdown (else Spring Boot might hang on exit).
     - This ensures clean terminal (very important when the service is deployed on Railway or whatever).

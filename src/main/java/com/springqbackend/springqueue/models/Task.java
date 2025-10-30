@@ -1,13 +1,5 @@
 package com.springqbackend.springqueue.models;
 
-/* NOTE-TO-SELF: In the context of remaking my GoQueue project, this would be my Task.go file.
-**********************************************************************************************
-MORE NOTES (for my own learning, more related to Spring Boot semantics and best practices):
-* This is a POJO (Plain-Old Java Object), not a Bean. (The class shouldn't have any annotations).
-** It is meant to be created dynamically and not injected by Spring's container.
-** POJOs' should have no-args constructors. Any models, DTOs, or entity classes should have these.
-*/
-
 import com.springqbackend.springqueue.enums.TaskStatus;
 import java.util.Objects;
 
