@@ -5,20 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c374c03d-fddd-4630-96ec-4bd9e8216f24" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitattributes" beforeDir="false" afterPath="$PROJECT_DIR$/springqueue-backend/.gitattributes" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/springqueue-backend/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" afterPath="$PROJECT_DIR$/springqueue-backend/.mvn/wrapper/maven-wrapper.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mvnw" beforeDir="false" afterPath="$PROJECT_DIR$/springqueue-backend/mvnw" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mvnw.cmd" beforeDir="false" afterPath="$PROJECT_DIR$/springqueue-backend/mvnw.cmd" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/springqueue-backend/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/springqbackend/springqueue/SpringQueueApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/springqueue-backend/src/main/java/com/springqbackend/springqueue/SpringQueueApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/springqbackend/springqueue/controller/ProducerController.java" beforeDir="false" afterPath="$PROJECT_DIR$/springqueue-backend/src/main/java/com/springqbackend/springqueue/controller/ProducerController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/springqbackend/springqueue/enums/TaskStatus.java" beforeDir="false" afterPath="$PROJECT_DIR$/springqueue-backend/src/main/java/com/springqbackend/springqueue/enums/TaskStatus.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/springqbackend/springqueue/models/Task.java" beforeDir="false" afterPath="$PROJECT_DIR$/springqueue-backend/src/main/java/com/springqbackend/springqueue/models/Task.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/springqbackend/springqueue/runtime/Worker.java" beforeDir="false" afterPath="$PROJECT_DIR$/springqueue-backend/src/main/java/com/springqbackend/springqueue/runtime/Worker.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/springqbackend/springqueue/service/QueueService.java" beforeDir="false" afterPath="$PROJECT_DIR$/springqueue-backend/src/main/java/com/springqbackend/springqueue/service/QueueService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/springqueue-backend/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/com/springqbackend/springqueue/SpringQueueApplicationTests.java" beforeDir="false" afterPath="$PROJECT_DIR$/springqueue-backend/src/test/java/com/springqbackend/springqueue/SpringQueueApplicationTests.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springqueue-frontend/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/springqueue-frontend/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springqueue-frontend/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/springqueue-frontend/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springqueue-frontend/src/App.css" beforeDir="false" afterPath="$PROJECT_DIR$/springqueue-frontend/src/App.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springqueue-frontend/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/springqueue-frontend/src/App.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/springqueue-frontend/src/assets/react.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/springqueue-frontend/src/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/springqueue-frontend/src/index.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -71,13 +64,27 @@
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/timan/OneDrive/Desktop/Spring Boot Projects/springqueue/springqueue&quot;
   }
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\timan\OneDrive\Desktop\Spring Boot Projects\springqueue\springqueue\springqueue-backend" />
     </key>
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="springqueue" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="springqueue" />
+      <option name="filePath" />
+      <method v="2" />
+    </configuration>
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">

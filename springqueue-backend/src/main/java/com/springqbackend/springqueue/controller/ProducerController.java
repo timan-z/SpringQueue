@@ -14,8 +14,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
-//@CrossOrigin(origins = "${CORS_ALLOWED_ORIGIN}") // for Netlify/Railway CORS <-- this line alone should replace the CORS stuff I had in Producer.go
-// NOTE: ^ I don't have a frontend set up yet so I don't believe I need to worry about any CORS stuff as of this moment...
+@CrossOrigin(origins = "${CORS_ALLOWED_ORIGIN}") // for Netlify/Railway CORS (also local dev) <-- this line alone should replace the CORS stuff I had in Producer.go
 public class ProducerController {
     private final QueueService queue;
 
