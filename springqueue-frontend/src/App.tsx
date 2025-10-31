@@ -116,9 +116,9 @@ function App() {
     <div id="mainPageWrapper">
       {/* Header: */}
       <header id="pageTitle">
-        <h1 id="mainHeader" className="headerEl">GoQueue</h1>
+        <h1 id="mainHeader" className="headerEl">SpringQueue</h1>
         <h2 className="headerEl">Basically just a bare-essentials simulation of Task Queue programs like Celery and Sidekiq</h2>
-        <p id="pageUndertext">The (backend) logic of which was built entirely in <b>Go</b> (to help better understand <b>Goroutines</b>) with a ReactTS-based Dashboard (<i>which is what you're on now</i>).</p>
+        <p id="pageUndertext">The (backend) logic of which was built entirely in <b>Java-SpringBoot</b> (to help better understand <b>SpringBoot</b>) with a ReactTS-based Dashboard (<i>which is what you're on now</i>).</p>
       </header>
 
       {/* Main Body: */}
@@ -209,12 +209,18 @@ function App() {
         {/* Small About Panel: */}
         <div id="AboutPanel">
           <h2>ABOUT PANEL:</h2>
-          Just a learning project. GoQueue is a Task Queue Dashboard built to interact with a Go-based job/task processing system  inspired by tools like Celery. You can enqueue jobs on the Dashboard, they'll be sent to the back and processed concurrently with worker goroutines, and you can track their status in real-time. 
+          <div style={{display:"inline"}}>
+          SpringQueue is a remake of my <a href="https://github.com/timan-z/gotaskqueue" target="_blank">GoQueue</a> project, which was a Task Queue Dashboard built to interact with a Go-based job/task processing system inspired 
+          by tools like Celery. As an initial project to begin my journey to Spring Boot proficiency: I made this project to better grasp dependency injection and 
+          standard-fare annotations (e.g., @Service), get hands-on experience building a REST API, playing with Java's concurrency libraries, and familiarize w/ 
+          general good practices. It began by directly translating my Go logic one-to-one but then refactoring it to make the design more idiomatically Java. 
+          (More on this in the repo linked at the bottom of this panel). Regardless, the core logic remains the same (both built upon the Producer-Consumer model).
+          </div>
           <ul>
             <li>Queue size is hardcoded as 100 with a fixed # of 3 workers.</li>
             <li>Job Type Time (s) refers to the time it takes for each worker subroutine to complete the Job/Task (<i>pick "takes-long" and immediately click "Get All Jobs", see its status, and then wait 10s and try again</i>).</li>
           </ul>
-          Currently hosted on Netlify and Railway. See <a href="https://github.com/timan-z/gotaskqueue" target="_blank">README and GitHub repo</a> for further information.
+          Currently hosted on Netlify and Railway. See <a href="https://github.com/timan-z/SpringQueue" target="_blank">README and GitHub repo</a> for further information.
         </div>
       </main>
     </div>
